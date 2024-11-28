@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import prisma from "../lib/db";
 import { getKindeServerSession } from "@kinde-oss/kinde-auth-nextjs/server";
-import { Edit, File, Trash } from "lucide-react";
+import { Edit, File } from "lucide-react";
 import { Card } from "@/components/ui/card";
 
 import { TrashDelete } from "../components/Submitbuttons";
