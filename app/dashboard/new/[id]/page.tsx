@@ -17,8 +17,16 @@ import { getKindeServerSession } from "@kinde-oss/kinde-auth-nextjs/server";
 import { redirect } from "next/navigation";
 import { revalidatePath, unstable_noStore as noStore } from "next/cache";
 
+// Define types for the component props
+interface PageProps {
+    params: {
+        id: string;
+    };
+}
+
+// Function to fetch data for the page
 async function getData({ userId, noteId }: { userId: string; noteId: string }) {
-    noStore();
+    noStore(); // Ensures the cache is bypassed for fresh data
     const data = await prisma.note.findUnique({
         where: {
             id: noteId,
@@ -34,23 +42,24 @@ async function getData({ userId, noteId }: { userId: string; noteId: string }) {
     return data;
 }
 
-export default async function DynamicRoute({
-    params,
-}: {
-    params: { id: string };
-}) {
+// Dynamic route component
+export default async function DynamicRoute({ params }: PageProps) {
     const { getUser } = getKindeServerSession();
     const user = await getUser();
+
+    // Fetch note data based on the user and note ID
     const data = await getData({ userId: user?.id as string, noteId: params.id });
 
+    // Handle form submission
     async function postData(formData: FormData) {
         "use server";
 
-        if (!user) throw new Error("you are not allowed");
+        if (!user) throw new Error("You are not allowed");
 
         const title = formData.get("title") as string;
         const description = formData.get("description") as string;
 
+        // Update the note in the database
         await prisma.note.update({
             where: {
                 id: data?.id,
@@ -62,10 +71,11 @@ export default async function DynamicRoute({
             },
         });
 
-        revalidatePath("/dashboard");
-
-        return redirect("/dashboard");
+        revalidatePath("/dashboard"); // Revalidate the dashboard page
+        return redirect("/dashboard"); // Redirect back to the dashboard
     }
+
+    // Render the form
     return (
         <Card>
             <form action={postData}>
